@@ -1,18 +1,33 @@
 import express, { Application, Request, Response } from "express";
 import cors from 'cors';
+import rateLimit from "express-rate-limit";
 import dotenv from 'dotenv'
 import { AppDataSource } from "./data-source";
 import { decode_url, shorten_url } from "./services/shorten";
 dotenv.config();
 const app: Application = express();  
 const PORT = process.env.PORT || 5001;
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
 app.get('/',(req: Request, res: Response)=>{
     return res.send('gello');
 })
-app.get('/:code',async (req: Request, res: Response)=>{
+const accountLimiter = rateLimit({
+    windowMs: 1*60*1000,
+    limit: 5,
+    message: {message: "Too many links created! Please try again after a minute :)", ok: false},
+    standardHeaders: true,
+    legacyHeaders: false
+});
+const redirectLimiter = rateLimit({
+    windowMs: 1*60*1000,
+    limit: 60,
+    message: {message: "Too many requests, please try again in a minute", ok: false}
+})
+app.get('/:code', redirectLimiter, async (req: Request, res: Response)=>{
     const code = req.params.code;
+    console.log('GET /:code endpoint hit');
     const orz_url = await decode_url(code);
     if(!orz_url) return res.status(404).json({
         'message': 'Url mapping does not exist',
@@ -20,8 +35,9 @@ app.get('/:code',async (req: Request, res: Response)=>{
     });
     res.redirect(orz_url);
 });
-app.post('/shorten',async (req: Request, res: Response)=>{
+app.post('/shorten', accountLimiter, async (req: Request, res: Response)=>{
     let {url} = req.body; // body : {'url': 'www.google.com'}
+    console.log(url);
     if(!url){
         return res.status(400).json({
             'message': 'URL is required',
