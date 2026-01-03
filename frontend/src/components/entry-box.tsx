@@ -26,7 +26,7 @@ export default function EntryBox(){
 
         try{
             const resp = await axios.post<ShortenedResponse>(
-                'http://127.0.0.1:3000/shorten',
+                'http://127.0.0.1:3000/api/shorten',
                 {url: longUrl}
             );
             setShorturl(resp.data.short_url);
