@@ -3,3 +3,6 @@ To spin up backend:
 
 To spin up frontend:
 `cd frontend && npm i && npm run dev`
+
+Deployed Link:
+surl.root.sx
