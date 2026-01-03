@@ -5,4 +5,4 @@ To spin up frontend:
 `cd frontend && npm i && npm run dev`
 
 Deployed Link:
-surl.root.sx
+[link](https://surl.root.sx/)
